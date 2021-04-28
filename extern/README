@@ -1,0 +1,9 @@
+- the makefile gets all the depends required to use the engine and builds them
+if necesary
+- use make clean to clear all extern modules
+- modules will have an interface header that will be used to include that module
+headers and makefile.extern.OSTYPE that will be used to link those libs where
+OSTYPE can be macos, linux or win32 and to build them if necesary
+- extern libs will also stay here as libname_if.h because often we need to
+enforce strict include ordering and all kinds of strange include macros that
+we don't want to care about inside of the engine
