@@ -15,7 +15,7 @@ the aim is to fix some problems with how GameWorkspace is structured now:
 - debug support is almost inexistent
 
 to fix those problems:
-- will use glfw, glew, vulkan, imgui, sol2+luajit
+- will use glfw, glew, vulkan, imgui, sol2+luajit, shaderc
 - will change naming convention and rewrite some code to better fit my coding
 style
 - will add testers
@@ -23,7 +23,7 @@ style
 headers
 - will work with cmake
 - will compile for Linux, Windows and maybe MacOS
-- will only have a lib and include folder 
+- will only have a lib, src, and include folder for libs
 - will have the following additional dirs: experiments, shaders, fonts, tests,
 extern, assets, docs.
 - add DBG and EXCEPTION and make error handling a priority
@@ -40,3 +40,5 @@ in extern:
 - sol2
 - imgui
 
+General rules:
+- all folders must end with / in memory and Windows must also use / not \

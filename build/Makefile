@@ -111,6 +111,32 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named game_engine_shared
+
+# Build rule for target.
+game_engine_shared: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 game_engine_shared
+.PHONY : game_engine_shared
+
+# fast build rule for target.
+game_engine_shared/fast:
+	$(MAKE) -f src/CMakeFiles/game_engine_shared.dir/build.make src/CMakeFiles/game_engine_shared.dir/build
+.PHONY : game_engine_shared/fast
+
+#=============================================================================
+# Target rules for targets named game_engine
+
+# Build rule for target.
+game_engine: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 game_engine
+.PHONY : game_engine
+
+# fast build rule for target.
+game_engine/fast:
+	$(MAKE) -f src/CMakeFiles/game_engine.dir/build.make src/CMakeFiles/game_engine.dir/build
+.PHONY : game_engine/fast
+
+#=============================================================================
 # Target rules for targets named test_vulkan
 
 # Build rule for target.
@@ -120,35 +146,34 @@ test_vulkan: cmake_check_build_system
 
 # fast build rule for target.
 test_vulkan/fast:
-	$(MAKE) -f CMakeFiles/test_vulkan.dir/build.make CMakeFiles/test_vulkan.dir/build
+	$(MAKE) -f tests/CMakeFiles/test_vulkan.dir/build.make tests/CMakeFiles/test_vulkan.dir/build
 .PHONY : test_vulkan/fast
 
-tests/test_vulkan.o: tests/test_vulkan.cpp.o
+#=============================================================================
+# Target rules for targets named test_vcpp1
 
-.PHONY : tests/test_vulkan.o
+# Build rule for target.
+test_vcpp1: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_vcpp1
+.PHONY : test_vcpp1
 
-# target to build an object file
-tests/test_vulkan.cpp.o:
-	$(MAKE) -f CMakeFiles/test_vulkan.dir/build.make CMakeFiles/test_vulkan.dir/tests/test_vulkan.cpp.o
-.PHONY : tests/test_vulkan.cpp.o
+# fast build rule for target.
+test_vcpp1/fast:
+	$(MAKE) -f tests/CMakeFiles/test_vcpp1.dir/build.make tests/CMakeFiles/test_vcpp1.dir/build
+.PHONY : test_vcpp1/fast
 
-tests/test_vulkan.i: tests/test_vulkan.cpp.i
+#=============================================================================
+# Target rules for targets named test
 
-.PHONY : tests/test_vulkan.i
+# Build rule for target.
+test: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test
+.PHONY : test
 
-# target to preprocess a source file
-tests/test_vulkan.cpp.i:
-	$(MAKE) -f CMakeFiles/test_vulkan.dir/build.make CMakeFiles/test_vulkan.dir/tests/test_vulkan.cpp.i
-.PHONY : tests/test_vulkan.cpp.i
-
-tests/test_vulkan.s: tests/test_vulkan.cpp.s
-
-.PHONY : tests/test_vulkan.s
-
-# target to generate assembly for a file
-tests/test_vulkan.cpp.s:
-	$(MAKE) -f CMakeFiles/test_vulkan.dir/build.make CMakeFiles/test_vulkan.dir/tests/test_vulkan.cpp.s
-.PHONY : tests/test_vulkan.cpp.s
+# fast build rule for target.
+test/fast:
+	$(MAKE) -f tests/CMakeFiles/test.dir/build.make tests/CMakeFiles/test.dir/build
+.PHONY : test/fast
 
 # Help Target
 help:
@@ -158,10 +183,11 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
+	@echo "... game_engine_shared"
+	@echo "... game_engine"
 	@echo "... test_vulkan"
-	@echo "... tests/test_vulkan.o"
-	@echo "... tests/test_vulkan.i"
-	@echo "... tests/test_vulkan.s"
+	@echo "... test_vcpp1"
+	@echo "... test"
 .PHONY : help
 
 

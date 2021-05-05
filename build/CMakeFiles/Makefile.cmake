@@ -11,6 +11,11 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.16.3/CMakeCCompiler.cmake"
   "CMakeFiles/3.16.3/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.16.3/CMakeSystem.cmake"
+  "../cmake/utils.cmake"
+  "../src/CMakeDeps.cmake"
+  "../src/CMakeLists.txt"
+  "../tests/CMakeDeps.cmake"
+  "../tests/CMakeLists.txt"
   "/usr/share/cmake-3.16/Modules/CMakeCInformation.cmake"
   "/usr/share/cmake-3.16/Modules/CMakeCXXInformation.cmake"
   "/usr/share/cmake-3.16/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake"
@@ -41,9 +46,15 @@ set(CMAKE_MAKEFILE_OUTPUTS
 # Byproducts of CMake generate step:
 set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/CMakeDirectoryInformation.cmake"
+  "src/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "tests/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "CMakeFiles/test_vulkan.dir/DependInfo.cmake"
+  "src/CMakeFiles/game_engine_shared.dir/DependInfo.cmake"
+  "src/CMakeFiles/game_engine.dir/DependInfo.cmake"
+  "tests/CMakeFiles/test_vulkan.dir/DependInfo.cmake"
+  "tests/CMakeFiles/test_vcpp1.dir/DependInfo.cmake"
+  "tests/CMakeFiles/test.dir/DependInfo.cmake"
   )
