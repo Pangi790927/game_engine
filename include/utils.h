@@ -134,7 +134,6 @@ struct TimePointMs {
 		T held_type() { return obj; }
 	};
 
-
 	template <CanPrintf T>
 	struct sformat_arg_t<T> {
 		std::string str;
@@ -159,12 +158,16 @@ struct TimePointMs {
 /* LOGGING: DBG and EXCEPTIONS:
 ============================================================================= */
 
+// need 2 of them for the ocasions where we use EXCEPTION inside a macro
+#define DBG2(fmt, ...) printf("%s", pge::sformat("[%s:%d] %s() :> " fmt "\n",\
+		__FILE__, __LINE__, __func__, ##__VA_ARGS__).c_str());
 #define DBG(fmt, ...) printf("%s", pge::sformat("[%s:%d] %s() :> " fmt "\n",\
 		__FILE__, __LINE__, __func__, ##__VA_ARGS__).c_str());
 
+
 #define EXCEPTION(fmt, ...) \
 	throw (std::runtime_error([&](const char *file, int line, const char *fn){\
-		DBG(fmt, ##__VA_ARGS__);\
+		DBG2(fmt, ##__VA_ARGS__);\
 		std::string str;\
 		str = pge::sformat("[file: %s][line: %d] %s() -> " fmt "\nbt:\n",\
 				file, line, fn, ##__VA_ARGS__);\
