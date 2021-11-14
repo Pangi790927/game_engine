@@ -1,0 +1,11 @@
+{
+	"window": {
+		"width": 800,
+		"height": 800,
+		"debug_mode": true,
+		"app_name": "app",
+		"window_name": "app window",
+		"libgame_path": "../src/libgame_engine_shared.so",
+		"engine_name": "Pangi's Game Engine"
+	}
+}

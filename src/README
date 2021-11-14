@@ -1,4 +1,0 @@
-because we need some external libs and linking those can be quite slow sometimes
-we will merge them all in a shared library and load it when needed
-
-the shared lib is intended to be used by the slower parts of the code

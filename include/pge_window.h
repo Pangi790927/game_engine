@@ -7,6 +7,7 @@
 #include "glfw_vulkan_if.h"
 #include "utils.h"
 #include "game_engine_st.h"
+#include "pge_common.h"
 
 #define MIN_DBG_SEVERITY VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
 
@@ -19,18 +20,14 @@ namespace pge
 {
 
 struct GlfwIniter {
-    GlfwIniter() {
-        pge::init("../src/libgame_engine_shared.so");
+    GlfwIniter(const Config& cfg) {
+        pge::init(JSTR(cfg, "libgame_path"));
         if (!glfwInit())
             EXCEPTION("Failed to init glfw");
     }
     ~GlfwIniter() {
         glfwTerminate();
     }
-};
-
-struct Window {
-
 };
 
 /* The window will hold the glfw window, the vulkan instance, vulkan logical
@@ -40,7 +37,7 @@ options should be added for some of the initialization values, but anything
 more seems like a huge waste of time.
     Everything will be destroyed at window destruction.
 */
-struct PgeWindow {
+struct Window {
     struct dev_t {
         VkPhysicalDevice phy_dev;
         int score;
@@ -86,21 +83,24 @@ struct PgeWindow {
         }
     };
     std::unique_ptr<WindowDataScope> d;
-    dev_t phydev;
+    dev_t dev;
 
-    PgeWindow(Drawcore &dc, int w, int h, const Config& cfg) {
+    Window(const Config& cfg) {
         /* initialize glfw */
         d = std::make_unique<WindowDataScope>();
+        static GlfwIniter glfw_initer(cfg);
 
         /* create glfw window */
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-        d->window = glfwCreateWindow(w, h, name, nullptr, nullptr);
+        d->window = glfwCreateWindow(JINT(cfg, "width"), JINT(cfg, "height"),
+                JSTR(cfg, "window_name"), nullptr, nullptr);
         if (!d->window)
             EXCEPTION("Can't create glfw window");
         glfwSetInputMode(d->window, GLFW_STICKY_KEYS, GLFW_TRUE);
 
-        if (cfg["debug_mode"] && check_dbg_support() == false)
+        bool debug_mode = JBOOL(cfg, "debug_mode");
+        if (debug_mode && check_dbg_support() == false)
             EXCEPTION("Can't add validation layers");
 
         /* get required instance extensions */
@@ -109,8 +109,8 @@ struct PgeWindow {
         /* create vulkan instance */
         VkApplicationInfo app_info{
 		    .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-            .pApplicationName = name,
-            .pEngineName = "Pangi'sGameEngine",
+            .pApplicationName = JSTR(cfg, "app_name"),
+            .pEngineName = JSTR(cfg, "engine_name"),
             .apiVersion = VK_API_VERSION_1_1
         };
         VkDebugUtilsMessengerCreateInfoEXT dbgmsg_info{
@@ -150,28 +150,28 @@ struct PgeWindow {
     		EXCEPTION("failed to create window surface!");
         
         /* select a physical device */
-        phydev = select_phy_dev();
+        dev = select_phy_dev();
 
         VkSwapchainCreateInfoKHR swapchain_info{
             .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
             .surface = d->surface,
-            .minImageCount = phydev.swch_img_cnt,
-            .imageFormat = phydev.surf_fmt.format,
-            .imageColorSpace = phydev.surf_fmt.colorSpace,
-            .imageExtent = phydev.extent,
+            .minImageCount = dev.swch_img_cnt,
+            .imageFormat = dev.surf_fmt.format,
+            .imageColorSpace = dev.surf_fmt.colorSpace,
+            .imageExtent = dev.extent,
             .imageArrayLayers = 1,
             .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-            .preTransform = phydev.capab.currentTransform,
+            .preTransform = dev.capab.currentTransform,
             .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-            .presentMode = phydev.surf_pres,
+            .presentMode = dev.surf_pres,
             .clipped = VK_TRUE,
             .oldSwapchain = VK_NULL_HANDLE,
         };
 
         // TODO: Find why when praphic == pres, we use exclusive
         uint32_t queue_indices[] = {
-                phydev.graphic_index, phydev.presentation_index };
-        if (phydev.graphic_index != phydev.presentation_index) {
+                dev.graphic_index, dev.presentation_index };
+        if (dev.graphic_index != dev.presentation_index) {
             swapchain_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
             swapchain_info.queueFamilyIndexCount = 2;
             swapchain_info.pQueueFamilyIndices = queue_indices;
@@ -184,7 +184,7 @@ struct PgeWindow {
         float que_priority = 1.0f;
         std::vector<VkDeviceQueueCreateInfo> que_infos;
         std::set<uint32_t> unique_que_indexes{
-                phydev.graphic_index, phydev.presentation_index };
+                dev.graphic_index, dev.presentation_index };
         for (uint32_t que_index : unique_que_indexes) {
             que_infos.push_back(VkDeviceQueueCreateInfo{
                 .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
@@ -210,7 +210,7 @@ struct PgeWindow {
         };
 
         /* create de logical device */
-        if (vkCreateDevice(phydev.phy_dev, &dev_info, NULL,
+        if (vkCreateDevice(dev.phy_dev, &dev_info, NULL,
                 &d->device) != VK_SUCCESS)
             EXCEPTION("failed to create logical device!");
 
@@ -221,10 +221,10 @@ struct PgeWindow {
         }
 
         /* get queues for logical device */
-        vkGetDeviceQueue(d->device, phydev.graphic_index, 0,
-                &phydev.graphic_queue);
-        vkGetDeviceQueue(d->device, phydev.presentation_index, 0,
-                &phydev.present_queue);
+        vkGetDeviceQueue(d->device, dev.graphic_index, 0,
+                &dev.graphic_queue);
+        vkGetDeviceQueue(d->device, dev.presentation_index, 0,
+                &dev.present_queue);
 
         /* create swap images views */
         uint32_t cnt = 0;
@@ -240,7 +240,7 @@ struct PgeWindow {
                 .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
                 .image = swap_imgs[i],
                 .viewType = VK_IMAGE_VIEW_TYPE_2D,
-                .format = phydev.surf_fmt.format,
+                .format = dev.surf_fmt.format,
                 .components = {
                     .r = VK_COMPONENT_SWIZZLE_IDENTITY,
                     .g = VK_COMPONENT_SWIZZLE_IDENTITY,
@@ -261,6 +261,11 @@ struct PgeWindow {
                 EXCEPTION("failed to create image views!");
             }
         }
+    }
+
+    void wait_idle() {
+        if (d && d->device)
+            vkDeviceWaitIdle(d->device);
     }
 
 private:

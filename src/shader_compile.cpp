@@ -1,17 +1,14 @@
 // object file to make compilation faster for shaders
 
 #include "utils.h"
-#include "pge_game_engine_sh.h"
+#include "shader_compile.h"
 
 #include <shaderc/shaderc.hpp>
 #include <string>
 #include <fstream>
 #include <streambuf>
 
-namespace pge
-{
-
-[[maybe_unused]]		
+[[maybe_unused]]
 static std::string preprocess_shader(const std::string& source_name,
 		shaderc_shader_kind kind, const std::string& source)
 {
@@ -61,12 +58,18 @@ static std::string compile_file_to_assembly(const std::string& source_name,
 
 static shaderc_shader_kind get_shader_kind(int shader_type) {
 	switch (shader_type) {
-		case VERTEX_SHADER:          return shaderc_glsl_vertex_shader;
-		case FRAGMENT_SHADER:        return shaderc_glsl_fragment_shader;
-		case COMPUTE_SHADER:         return shaderc_glsl_compute_shader;
-		case GEOMETRY_SHADER:        return shaderc_glsl_geometry_shader;
-		case TESS_CONTROL_SHADER:    return shaderc_glsl_tess_control_shader;
-		case TESS_EVALUATION_SHADER: return shaderc_glsl_tess_evaluation_shader;
+		case SHC_VERTEX_SHADER:
+			return shaderc_glsl_vertex_shader;
+		case SHC_FRAGMENT_SHADER:
+			return shaderc_glsl_fragment_shader;
+		case SHC_COMPUTE_SHADER:
+			return shaderc_glsl_compute_shader;
+		case SHC_GEOMETRY_SHADER:
+			return shaderc_glsl_geometry_shader;
+		case SHC_TESS_CONTROL_SHADER:
+			return shaderc_glsl_tess_control_shader;
+		case SHC_TESS_EVALUATION_SHADER:
+			return shaderc_glsl_tess_evaluation_shader;
 		default: return shaderc_glsl_infer_from_source;
 	}
 }
@@ -102,40 +105,42 @@ static std::vector<uint32_t> compile_shader_path(const std::string& path,
 	std::ifstream t(path);
 	std::string src((std::istreambuf_iterator<char>(t)),
 			std::istreambuf_iterator<char>());
-	return pge::compile_shader_src(path, src, kind, optimize);
+	return compile_shader_src(path, src, kind, optimize);
 }
 
-} // namespace ge
-
-PGE_EXPORT uint32_t *pge_compilde_shader_path(const char *path, int kind,
+EXTERN_FN uint32_t *shc_compile_path(const char *path, int kind,
 		size_t *result_len, bool optimize)
 {
 	if (!result_len || !path) {
 		DBG("name, src, result_len can't be NULL");
 		return NULL;
 	}
-	auto vec = pge::compile_shader_path(path, kind, optimize);
+	auto vec = compile_shader_path(path, kind, optimize);
 	*result_len = vec.size();
 	uint32_t *ret = new uint32_t[vec.size()];
 	memcpy(ret, vec.data(), vec.size() * sizeof(uint32_t));
 	return ret;
 }
 
-PGE_EXPORT uint32_t *pge_compilde_shader_src(const char *name, const char *src,
+EXTERN_FN uint32_t *shc_compile_src(const char *name, const char *src,
 		int kind, size_t *result_len, bool optimize)
 {
 	if (!result_len || !name || !src) {
 		DBG("name, src, result_len can't be NULL");
 		return NULL;
 	}
-	auto vec = pge::compile_shader_src(name, src, kind, optimize);
+	auto vec = compile_shader_src(name, src, kind, optimize);
 	*result_len = vec.size();
 	uint32_t *ret = new uint32_t[vec.size()];
 	memcpy(ret, vec.data(), vec.size() * sizeof(uint32_t));
 	return ret;
 }
 
-PGE_EXPORT int pge_free_shader_mem(uint32_t *ptr) {
+EXTERN_FN int shc_free_shader(uint32_t *ptr) {
 	delete [] ptr;
 	return 0;
+}
+
+EXTERN_FN int shc_get_version() {
+	return LIB_VERSION;
 }

@@ -7,9 +7,11 @@
 #include <set>
 #include <map>
 
-#include "glfw_vulkan_if.h"
+#include <vulkan/vulkan.hpp>
+#include <GLFW/glfw3.h>
+
 #include "utils.h"
-#include "pge_pipeline.h"
+#include "shader_compile.h"
 
 /* CONFIG:
 ============================================================================= */
@@ -502,22 +504,28 @@ int main() {
 
 /* SHADERS:
 ============================================================================= */
-	pge::init("../src/libgame_engine_shared.so");
+	ShaderC shaderc_lib;
+	if (shaderc_lib.load("./libshc.so") != 0) {
+		DBG("Couldn't load shader compiler lib");
+		return -1;
+	}
 
 	DBG("Will load shaders");
 
 	// Obs: not needed after module creation
 	// Obs: slow, should cache and save to disk
-	auto vert_code = pge::compile_shader_path("../../shaders/test_shader.vert",
-			pge::VERTEX_SHADER, true);
-	auto frag_code = pge::compile_shader_path("../../shaders/test_shader.frag",
-			pge::FRAGMENT_SHADER, true);
+	size_t vs_code_len = 0;
+	auto vert_code = shaderc_lib.shc_compile_path_fn(
+			"shaders/test_shader.vert", SHC_VERTEX_SHADER, &vs_code_len, true);
+	size_t fs_code_len = 0;
+	auto frag_code = shaderc_lib.shc_compile_path_fn(
+			"shaders/test_shader.frag", SHC_FRAGMENT_SHADER, &fs_code_len, true);
 
 	DBG("Will register loaded shaders");
 	VkShaderModuleCreateInfo vertInfo{
 		.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-		.codeSize = vert_code.size() * sizeof(uint32_t),
-		.pCode = reinterpret_cast<const uint32_t*>(vert_code.data()),
+		.codeSize = vs_code_len * sizeof(uint32_t),
+		.pCode = vert_code,
 	};
 
 	VkShaderModule vertShaderModule;
@@ -529,8 +537,8 @@ int main() {
 
 	VkShaderModuleCreateInfo fragInfo{
 		.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-		.codeSize = frag_code.size() * sizeof(uint32_t),
-		.pCode = reinterpret_cast<const uint32_t*>(frag_code.data()),
+		.codeSize = fs_code_len * sizeof(uint32_t),
+		.pCode = frag_code,
 	};
 
 	VkShaderModule fragShaderModule;
